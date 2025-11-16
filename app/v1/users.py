@@ -58,7 +58,7 @@ async def update_user(user_id: int, payload: UserUpdate, session: AsyncSession =
     if payload.password:
         user.hashed_password = hash_password(payload.password)
     if payload.name is not None:
-        user.name = payload.name
+        user.email = payload.name
     if payload.role is not None:
         user.role = payload.role
     if payload.is_active is not None:

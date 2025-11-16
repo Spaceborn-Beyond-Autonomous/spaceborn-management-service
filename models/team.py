@@ -1,9 +1,7 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 from sqlalchemy import String, Integer, ForeignKey, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base
-
-from sqlalchemy.orm import declarative_base
 
 if TYPE_CHECKING:
     from models.user import User
@@ -18,16 +16,18 @@ team_members = Table(
 )
 
 class Team(Base):
-    __tablename__ = "teams" # type: ignore[assignment]
-    __allow_unmapped__ = True  # Add this line
-
+    __tablename__ = "teams"  # type: ignore[assignment]
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     lead_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 
     # Relationships
-    lead: Mapped["User"] = relationship("User", back_populates="team_lead", foreign_keys=[lead_id])
+    lead: Mapped["User | None"] = relationship(
+        "User", 
+        back_populates="team_lead",
+        foreign_keys="[Team.lead_id]"
+    )
     members: Mapped[list["User"]] = relationship(
         "User",
         secondary=team_members,
@@ -36,4 +36,4 @@ class Team(Base):
     projects: Mapped[list["Project"]] = relationship("Project", back_populates="team")
 
     # Runtime-only attribute for response use
-    member_ids: list[int] | None = None
+    member_ids: ClassVar[list[int] | None] = None  # Use ClassVar
