@@ -18,7 +18,7 @@ async def create_project(payload: ProjectCreate, session: AsyncSession = Depends
 
 @router.get("/", response_model=list[ProjectRead], dependencies=[Depends(AnyAuthenticated)])
 async def list_projects(session: AsyncSession = Depends(get_session_dep), user: User = Depends(AnyAuthenticated)):
-    if user.role in (RoleEnum.admin, RoleEnum.core):
+    if user.role in (RoleEnum.ADMIN, RoleEnum.CORE):
         res = (await session.execute(select(Project))).scalars().all()
     else:
         # employee: projects they own or their team projects (through membership)
@@ -32,7 +32,7 @@ async def get_project(pid: int, session: AsyncSession = Depends(get_session_dep)
     p = (await session.execute(select(Project).where(Project.id == pid))).scalar_one_or_none()
     if not p:
         raise HTTPException(status_code=404, detail="Project not found")
-    if user.role == RoleEnum.employee and not (p.owner_id == user.id or (p.team_id and p.team_id in [t.id for t in user.teams])):
+    if user.role == RoleEnum.EMPLOYEE and not (p.owner_id == user.id or (p.team_id and p.team_id in [t.id for t in user.teams])):
         raise HTTPException(status_code=403, detail="Insufficient permissions")
     return p
 

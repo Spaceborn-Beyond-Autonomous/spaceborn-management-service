@@ -39,6 +39,6 @@ def require_roles(*roles: RoleEnum):
 
 
 # Shorthand dependencies
-AdminOnly = require_roles(RoleEnum.admin)
-CoreOrAdmin = require_roles(RoleEnum.admin, RoleEnum.core)
+AdminOnly = require_roles(RoleEnum.ADMIN)
+CoreOrAdmin = require_roles(RoleEnum.ADMIN, RoleEnum.CORE)
 AnyAuthenticated = get_current_user

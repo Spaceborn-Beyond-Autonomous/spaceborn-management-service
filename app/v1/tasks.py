@@ -18,7 +18,7 @@ async def create_task(payload: TaskCreate, session: AsyncSession = Depends(get_s
 
 @router.get("/", response_model=list[TaskRead], dependencies=[Depends(AnyAuthenticated)])
 async def list_tasks(session: AsyncSession = Depends(get_session_dep), user: User = Depends(AnyAuthenticated)):
-    if user.role in (RoleEnum.admin, RoleEnum.core):
+    if user.role in (RoleEnum.ADMIN, RoleEnum.CORE):
         res = (await session.execute(select(Task))).scalars().all()
     else:
         res = (await session.execute(select(Task).where((Task.assignee_id == user.id)))).scalars().all()
@@ -29,7 +29,7 @@ async def update_task(tid: int, payload: TaskUpdate, session: AsyncSession = Dep
     t = (await session.execute(select(Task).where(Task.id == tid))).scalar_one_or_none()
     if not t:
         raise HTTPException(status_code=404, detail="Task not found")
-    if user.role == RoleEnum.employee and t.assignee_id != user.id:
+    if user.role == RoleEnum.EMPLOYEE and t.assignee_id != user.id:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
     for k, v in payload.model_dump(exclude_unset=True).items():
         setattr(t, k, v)

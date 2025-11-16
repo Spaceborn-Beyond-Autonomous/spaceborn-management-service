@@ -23,7 +23,7 @@ async def create_revenue(payload: RevenueCreate, session: AsyncSession = Depends
 
 @router.get("/", response_model=list[RevenueRead], dependencies=[Depends(AnyAuthenticated)])
 async def list_revenues(session: AsyncSession = Depends(get_session_dep), user: User = Depends(AnyAuthenticated)):
-    if user.role in (RoleEnum.admin, RoleEnum.core):
+    if user.role in (RoleEnum.ADMIN, RoleEnum.CORE):
         res = (await session.execute(select(Revenue))).scalars().all()
     else:
         # see only revenues of projects they own or in their teams

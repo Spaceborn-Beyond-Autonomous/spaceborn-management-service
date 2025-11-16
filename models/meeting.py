@@ -1,20 +1,35 @@
-from sqlalchemy import ForeignKey, DateTime, String, Text
+from sqlalchemy import ForeignKey, DateTime, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import datetime, timezone
+from datetime import datetime
 from db.base import Base
-
 from typing import TYPE_CHECKING
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import declarative_base
 
 if TYPE_CHECKING:
     from models.project import Project
 
+Base = declarative_base()
+
 
 class Meeting(Base):
+    __tablename__ = "meetings"
+    
     id: Mapped[int] = mapped_column(primary_key=True)
-    project_id: Mapped[int] = mapped_column(ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"), 
+        nullable=False
+    )
     topic: Mapped[str] = mapped_column(String(255), nullable=False)
     agenda: Mapped[str | None] = mapped_column(Text, nullable=True)
-    scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), nullable=False)
+    scheduled_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
 
     project: Mapped["Project"] = relationship("Project", back_populates="meetings")

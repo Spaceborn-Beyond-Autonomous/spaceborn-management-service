@@ -5,12 +5,16 @@ from db.base import Base
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
 if TYPE_CHECKING:
     from models.project import Project
 
-
-
 class Revenue(Base):
+    __tablename__ = "revenue"
+ 
     id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
     amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)

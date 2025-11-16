@@ -5,14 +5,14 @@ from models.user import RoleEnum
 class UserBase(BaseModel):
     email: EmailStr
     name: str
-    role: RoleEnum = RoleEnum.employee
+    role: RoleEnum = RoleEnum.EMPLOYEE
     is_active: bool = True
 
 class UserCreate(BaseModel):
     email: EmailStr
     name: str
     password: str = Field(min_length=6)
-    role: RoleEnum = RoleEnum.employee
+    role: RoleEnum = RoleEnum.EMPLOYEE
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None

@@ -6,6 +6,10 @@ from db.base import Base
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
 if TYPE_CHECKING:
     from models.user import User
     from models.project import Project
@@ -18,6 +22,8 @@ class TaskStatus(str, enum.Enum):
     done = "done"
 
 class Task(Base):
+    __tablename__ = "task"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)

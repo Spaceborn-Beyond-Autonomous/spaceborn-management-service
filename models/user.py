@@ -1,30 +1,30 @@
-import enum
-from sqlalchemy import String, Enum, Boolean
+from sqlalchemy import String, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base
+import enum
 
-from typing import TYPE_CHECKING
+from sqlalchemy.orm import declarative_base
 
-if TYPE_CHECKING:
-    from models.team import Team
-
+Base = declarative_base()
 
 class RoleEnum(str, enum.Enum):
-    admin = "admin"
-    core = "core"
-    employee = "employee"
+    ADMIN = "admin"
+    CORE = "core"
+    EMPLOYEE = "employee" 
+
 
 class User(Base):
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    __tablename__ = "users"  # Add this line
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum, name="role_enum"), default=RoleEnum.employee, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-
-    teams: Mapped[list["Team"]] = relationship(
-        "Team",
-        secondary="team_members",
-        back_populates="members",
-        lazy="selectin"
+    role: Mapped[RoleEnum] = mapped_column(
+        SQLEnum(RoleEnum, native_enum=False, length=20),
+        nullable=False,
+        default=RoleEnum.EMPLOYEE
     )
+    
+    # Add relationships if needed
+    # teams: Mapped[list["Team"]] = relationship("Team", secondary="team_members", back_populates="members")

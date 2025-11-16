@@ -22,7 +22,7 @@ async def create_meeting(payload: MeetingCreate, session: AsyncSession = Depends
 
 @router.get("/", response_model=list[MeetingRead], dependencies=[Depends(AnyAuthenticated)])
 async def list_meetings(session: AsyncSession = Depends(get_session_dep), user: User = Depends(AnyAuthenticated)):
-    if user.role in (RoleEnum.admin, RoleEnum.core):
+    if user.role in (RoleEnum.ADMIN, RoleEnum.CORE):
         res = (await session.execute(select(Meeting))).scalars().all()
     else:
         # employee: meetings of their projects/teams — simplified visibility

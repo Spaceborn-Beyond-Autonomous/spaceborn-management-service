@@ -5,6 +5,10 @@ from db.base import Base
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
 if TYPE_CHECKING:
     from models.user import User
     from models.team import Team
@@ -14,6 +18,8 @@ if TYPE_CHECKING:
 
 
 class Project(Base):
+    __tablename__ = "project"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
