@@ -1,6 +1,18 @@
-def main():
-    print("Hello from spaceborn-management-service!")
+from fastapi import FastAPI
+from app.core.config import get_settings
+from app.api.v1 import users, teams, projects, tasks, revenues, meetings, dashboards
 
+settings = get_settings()
 
-if __name__ == "__main__":
-    main()
+def get_app() -> FastAPI:
+    app = FastAPI(title=settings.PROJECT_NAME)
+    app.include_router(users.router, prefix=settings.API_V1_STR)
+    app.include_router(teams.router, prefix=settings.API_V1_STR)
+    app.include_router(projects.router, prefix=settings.API_V1_STR)
+    app.include_router(tasks.router, prefix=settings.API_V1_STR)
+    app.include_router(revenues.router, prefix=settings.API_V1_STR)
+    app.include_router(meetings.router, prefix=settings.API_V1_STR)
+    app.include_router(dashboards.router, prefix=settings.API_V1_STR)
+    return app
+
+app = get_app()
