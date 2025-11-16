@@ -5,8 +5,6 @@ import enum
 
 from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
-
 class RoleEnum(str, enum.Enum):
     ADMIN = "admin"
     CORE = "core"
@@ -14,7 +12,7 @@ class RoleEnum(str, enum.Enum):
 
 
 class User(Base):
-    __tablename__ = "users"  # Add this line
+    __tablename__ = "users"  # type: ignore[assignment]
     
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)

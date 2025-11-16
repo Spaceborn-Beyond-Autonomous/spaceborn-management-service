@@ -5,8 +5,6 @@ from db.base import Base
 
 from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
-
 if TYPE_CHECKING:
     from models.user import User
     from models.project import Project
@@ -20,7 +18,7 @@ team_members = Table(
 )
 
 class Team(Base):
-    __tablename__ = "team"
+    __tablename__ = "team" # type: ignore[assignment]
     __allow_unmapped__ = True  # Add this line
 
 

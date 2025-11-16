@@ -4,16 +4,12 @@ from datetime import datetime
 from db.base import Base
 from typing import TYPE_CHECKING
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import declarative_base
 
 if TYPE_CHECKING:
     from models.project import Project
 
-Base = declarative_base()
-
-
 class Meeting(Base):
-    __tablename__ = "meetings"
+    __tablename__ = "meetings" # type: ignore[assignment]
     
     id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(

@@ -5,15 +5,11 @@ from db.base import Base
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
 if TYPE_CHECKING:
     from models.project import Project
 
 class Revenue(Base):
-    __tablename__ = "revenue"
+    __tablename__ = "revenue" # type: ignore[assignment]
  
     id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id", ondelete="CASCADE"), nullable=False)

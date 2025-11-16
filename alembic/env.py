@@ -2,34 +2,37 @@ import sys
 from pathlib import Path
 from logging.config import fileConfig
 
-# Add project root to Python path - ADD THIS
+# Add project root to Python path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
 from alembic import context
 
-# Now these imports will work
+# Import Base FIRST
 from db.base import Base
+
+# Import all models - needed for SQLAlchemy to detect them
+from models.user import User  # noqa: F401
+from models.team import Team  # noqa: F401
+from models.project import Project  # noqa: F401
+from models.task import Task  # noqa: F401
+from models.revenue import Revenue  # noqa: F401
+from models.meeting import Meeting  # noqa: F401
+
 from core.config import get_settings
 
-# Import all models so Alembic can detect them
-from models import user, team, project, task, revenue, meeting
-
-# this is the Alembic Config object
+# Alembic Config object
 config = context.config
 
-# Set database URL from your settings
+# Set database URL from settings
 settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_URI)
 
-# Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
 target_metadata = Base.metadata
 
 
