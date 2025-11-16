@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, Literal
-from app.models.user import RoleEnum
+from models.user import RoleEnum
 
 class UserBase(BaseModel):
     email: EmailStr
