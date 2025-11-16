@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from app.api.deps import AnyAuthenticated, CoreOrAdmin, get_session_dep
-from app.models.user import User, RoleEnum
-from app.models.project import Project
-from app.models.task import Task, TaskStatus
-from app.models.revenue import Revenue
+from app.deps import AnyAuthenticated, CoreOrAdmin, get_session_dep
+from models.user import User, RoleEnum
+from models.project import Project
+from models.task import Task, TaskStatus
+from models.revenue import Revenue
 
 router = APIRouter(prefix="/dashboards", tags=["dashboards"])
 

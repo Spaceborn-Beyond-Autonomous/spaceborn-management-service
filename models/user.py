@@ -1,7 +1,13 @@
 import enum
 from sqlalchemy import String, Enum, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.db.base import Base
+from db.base import Base
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.team import Team
+
 
 class RoleEnum(str, enum.Enum):
     admin = "admin"

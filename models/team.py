@@ -1,7 +1,17 @@
-from sqlalchemy import String, ForeignKey, Table, Column, Integer
+from typing import TYPE_CHECKING
+from sqlalchemy import String, Integer, ForeignKey, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.db.base import Base
+from db.base import Base
 
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
+if TYPE_CHECKING:
+    from models.user import User
+    from models.project import Project
+
+# Association table
 team_members = Table(
     "team_members",
     Base.metadata,
@@ -10,13 +20,20 @@ team_members = Table(
 )
 
 class Team(Base):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    __tablename__ = "team"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    lead_id: Mapped[int | None] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"))
+
+    # Relationships
+    lead: Mapped["User"] = relationship("User", back_populates="team_lead", foreign_keys=[lead_id])
     members: Mapped[list["User"]] = relationship(
         "User",
         secondary=team_members,
         back_populates="teams",
-        lazy="selectin"
     )
-    projects: Mapped[list["Project"]] = relationship("Project", back_populates="team", cascade="all, delete-orphan")
+    projects: Mapped[list["Project"]] = relationship("Project", back_populates="team")
+
+    # Runtime-only attribute for response use
+    member_ids: list[int] | None = None

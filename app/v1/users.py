@@ -69,7 +69,9 @@ async def update_user(user_id: int, payload: UserUpdate, session: AsyncSession =
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(AdminOnly)])
 async def delete_user(user_id: int, session: AsyncSession = Depends(get_session_dep)):
-    res = await session.execute(delete(User).where(User.id == user_id))
-    if res.rowcount == 0:
+    user = await session.get(User, user_id)
+    if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    await session.delete(user)
     await session.commit()
+

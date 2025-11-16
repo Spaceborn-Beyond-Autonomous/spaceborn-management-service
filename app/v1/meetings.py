@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.api.deps import get_session_dep, AnyAuthenticated, CoreOrAdmin
-from app.schemas.meeting import MeetingCreate, MeetingRead, MeetingUpdate
-from app.models.meeting import Meeting
-from app.models.user import User, RoleEnum
-from app.models.project import Project
+from app.deps import get_session_dep, AnyAuthenticated, CoreOrAdmin
+from schemas.meeting import MeetingCreate, MeetingRead, MeetingUpdate
+from models.meeting import Meeting
+from models.user import User, RoleEnum
+from models.project import Project
 
 router = APIRouter(prefix="/meetings", tags=["meetings"])
 

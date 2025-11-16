@@ -1,7 +1,14 @@
-from sqlalchemy import ForeignKey, Numeric, Date
+from sqlalchemy import ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
-from app.db.base import Base
+from db.base import Base
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.project import Project
+
+
 
 class Revenue(Base):
     id: Mapped[int] = mapped_column(primary_key=True)

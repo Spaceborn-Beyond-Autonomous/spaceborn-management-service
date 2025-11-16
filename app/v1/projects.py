@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.api.deps import get_session_dep, CoreOrAdmin, AnyAuthenticated
-from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
-from app.models.project import Project
-from app.models.user import User, RoleEnum
+from app.deps import get_session_dep, CoreOrAdmin, AnyAuthenticated
+from schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
+from models.project import Project
+from models.user import User, RoleEnum
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 

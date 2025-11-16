@@ -1,7 +1,17 @@
 from sqlalchemy import String, ForeignKey, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
-from app.db.base import Base
+from db.base import Base
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.user import User
+    from models.team import Team
+    from models.task import Task
+    from models.revenue import Revenue
+    from models.meeting import Meeting
+
 
 class Project(Base):
     id: Mapped[int] = mapped_column(primary_key=True)

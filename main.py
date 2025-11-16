@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.core.config import get_settings
-from app.api.v1 import users, teams, projects, tasks, revenues, meetings, dashboards
+from core.config import get_settings
+from app.v1 import users, teams, projects, tasks, revenues, meetings, dashboards
 
 settings = get_settings()
 

@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from app.api.deps import get_session_dep, CoreOrAdmin
-from app.schemas.team import TeamCreate, TeamRead, TeamUpdate
-from app.models.team import Team, team_members
-from app.models.user import User
+from app.deps import get_session_dep, CoreOrAdmin
+from schemas.team import TeamCreate, TeamRead, TeamUpdate
+from models.team import Team, team_members
 
 router = APIRouter(prefix="/teams", tags=["teams"])
 

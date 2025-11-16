@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.api.deps import get_session_dep, CoreOrAdmin, AnyAuthenticated
-from app.schemas.revenue import RevenueCreate, RevenueRead, RevenueUpdate
-from app.models.revenue import Revenue
-from app.models.user import User, RoleEnum
-from app.models.project import Project
+from app.deps import get_session_dep, CoreOrAdmin, AnyAuthenticated
+from schemas.revenue import RevenueCreate, RevenueRead, RevenueUpdate
+from models.revenue import Revenue
+from models.user import User, RoleEnum
+from models.project import Project
 
 router = APIRouter(prefix="/revenues", tags=["revenues"])
 
@@ -27,7 +27,7 @@ async def list_revenues(session: AsyncSession = Depends(get_session_dep), user: 
         res = (await session.execute(select(Revenue))).scalars().all()
     else:
         # see only revenues of projects they own or in their teams
-        from app.models.project import Project
+        from models.project import Project
         proj_ids = (await session.execute(select(Project.id))).scalars().all()
         # filter cheaply by joining condition in python for brevity
         res = (await session.execute(select(Revenue))).scalars().all()

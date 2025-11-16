@@ -2,7 +2,15 @@ from sqlalchemy import String, ForeignKey, Enum, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from datetime import datetime, timezone
-from app.db.base import Base
+from db.base import Base
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.user import User
+    from models.project import Project
+
+
 
 class TaskStatus(str, enum.Enum):
     todo = "todo"
