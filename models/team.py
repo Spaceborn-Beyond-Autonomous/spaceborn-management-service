@@ -21,6 +21,8 @@ team_members = Table(
 
 class Team(Base):
     __tablename__ = "team"
+    __allow_unmapped__ = True  # Add this line
+
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
