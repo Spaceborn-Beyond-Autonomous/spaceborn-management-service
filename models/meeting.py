@@ -7,6 +7,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 if TYPE_CHECKING:
     from models.project import Project
+    from models.meeting_attendance import MeetingAttendance
 
 class Meeting(Base):
     __tablename__ = "meetings" # type: ignore[assignment]
@@ -29,3 +30,7 @@ class Meeting(Base):
     )
 
     project: Mapped["Project"] = relationship("Project", back_populates="meetings")
+    attendances: Mapped[list["MeetingAttendance"]] = relationship(
+        back_populates="meeting",
+        lazy="select"
+    )

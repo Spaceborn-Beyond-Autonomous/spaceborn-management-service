@@ -6,6 +6,7 @@ import enum
 
 if TYPE_CHECKING:
     from models.team import Team
+    from models.meeting_attendance import MeetingAttendance
 
 class RoleEnum(str, enum.Enum):
     ADMIN = "admin"
@@ -39,5 +40,11 @@ class User(Base):
         "Team",
         secondary="team_members",
         back_populates="members",
+        lazy="select"
+    )
+
+    # Meeting attendances for this user
+    meeting_attendances: Mapped[list["MeetingAttendance"]] = relationship(
+        back_populates="user",
         lazy="select"
     )
