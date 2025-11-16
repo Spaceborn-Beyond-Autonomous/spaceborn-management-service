@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update
 from app.deps import get_session_dep, AdminOnly, get_current_user
-from schemas.user import UserRead, UserCreate, UserUpdate, Token
+from schemas.user import LoginRequest, UserRead, UserCreate, UserUpdate, Token
 from core.security import hash_password, verify_password, create_access_token
 from models.user import User, RoleEnum
 from fastapi.security import OAuth2PasswordRequestForm
@@ -26,10 +26,14 @@ async def register_user(payload: UserCreate, session: AsyncSession = Depends(get
     return user
 
 @router.post("/login", response_model=Token)
-async def login(form: OAuth2PasswordRequestForm = Depends(), session: AsyncSession = Depends(get_session_dep)):
-    q = await session.execute(select(User).where(User.email == form.username))
-    user = q.scalar_one_or_none()
-    if not user or not verify_password(form.password, user.hashed_password):
+async def login(
+    request: LoginRequest, 
+    session: AsyncSession = Depends(get_session_dep)
+):    
+    print(request.email)
+    query = await session.execute(select(User).where(User.email == request.email))
+    user = query.scalar_one_or_none()
+    if not user or not verify_password(request.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     token = create_access_token(subject=user.id)
     return {"access_token": token, "token_type": "bearer"}

@@ -26,7 +26,7 @@ class Team(Base):
     lead: Mapped["User | None"] = relationship(
         "User", 
         back_populates="team_lead",
-        foreign_keys="[Team.lead_id]"
+        foreign_keys=[lead_id]
     )
     members: Mapped[list["User"]] = relationship(
         "User",

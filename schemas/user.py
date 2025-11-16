@@ -31,3 +31,8 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: str
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+

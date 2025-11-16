@@ -10,7 +10,14 @@ sys.path.insert(0, str(project_root))
 
 from sqlalchemy import select
 from db.session import AsyncSessionLocal
+
+# Import ALL models to ensure proper mapper configuration
 from models.user import User, RoleEnum
+from models.team import Team
+from models.project import Project 
+from models.task import Task
+from models.revenue import Revenue
+from models.meeting import Meeting
 
 
 async def create_admin():
@@ -59,7 +66,8 @@ async def create_admin():
             username=username,
             email=email,
             hashed_password=hashed.decode('utf-8'),
-            role=RoleEnum.ADMIN
+            role=RoleEnum.ADMIN,
+            is_active=True
         )
         
         db.add(admin)

@@ -31,12 +31,13 @@ class User(Base):
     team_lead: Mapped[list["Team"]] = relationship(
         "Team",
         back_populates="lead",
-        foreign_keys="[Team.lead_id]"
+        lazy="select"
     )
     
     # Teams this user is a member of (automatically returns empty list if none)
     teams: Mapped[list["Team"]] = relationship(
         "Team",
         secondary="team_members",
-        back_populates="members"
+        back_populates="members",
+        lazy="select"
     )
