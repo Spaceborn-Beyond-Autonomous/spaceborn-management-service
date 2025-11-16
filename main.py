@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import get_settings
-from app.v1 import users, teams, projects, tasks, revenues, meetings, dashboards
+from app.v1 import users, teams, projects, tasks, revenues, meetings, dashboards, auth
 
 settings = get_settings()
 
@@ -21,6 +21,7 @@ def get_app() -> FastAPI:
     app.include_router(revenues.router, prefix=settings.API_V1_STR)
     app.include_router(meetings.router, prefix=settings.API_V1_STR)
     app.include_router(dashboards.router, prefix=settings.API_V1_STR)
+    app.include_router(auth.router, prefix=settings.API_V1_STR)
     return app
 
 app = get_app()
