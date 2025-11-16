@@ -6,6 +6,7 @@ from models.user import User, RoleEnum
 from models.project import Project
 from models.task import Task, TaskStatus
 from models.revenue import Revenue
+from schemas.user import UserRead
 
 router = APIRouter(prefix="/dashboard", tags=["dashboards"])
 
@@ -37,21 +38,22 @@ async def get_employee_data(session: AsyncSession, user: User):
 
 @router.get("/", dependencies=[Depends(AnyAuthenticated)])
 async def common_dashboard(session: AsyncSession = Depends(get_session_dep), user: User = Depends(AnyAuthenticated)):
+    # Include user data in the response
+    user_data = {
+        "id": user.id,
+        "email": user.email,
+        "name": user.username,
+        "role": user.role.value,
+    }
+    
     if user.role == RoleEnum.ADMIN:
-        return await get_admin_data(session)
+        dashboard_data = await get_admin_data(session)
     elif user.role == RoleEnum.CORE:
-        return await get_core_data(session)
+        dashboard_data = await get_core_data(session)
     else:  # EMPLOYEE
-        return await get_employee_data(session, user)
-
-@router.get("/admin", dependencies=[Depends(CoreOrAdmin)])
-async def admin_dashboard(session: AsyncSession = Depends(get_session_dep)):
-    return await get_admin_data(session)
-
-@router.get("/core", dependencies=[Depends(CoreOrAdmin)])
-async def core_dashboard(session: AsyncSession = Depends(get_session_dep)):
-    return await get_core_data(session)
-
-@router.get("/me", dependencies=[Depends(AnyAuthenticated)])
-async def employee_dashboard(session: AsyncSession = Depends(get_session_dep), user: User = Depends(AnyAuthenticated)):
-    return await get_employee_data(session, user)
+        dashboard_data = await get_employee_data(session, user)
+    
+    return {
+        "user": user_data,
+        "dashboard": dashboard_data
+    }
