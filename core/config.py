@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
     # Project
-    PROJECT_NAME: str = "OrgApp"
+    PROJECT_NAME: str = "Spaceborn Management Service"
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
     

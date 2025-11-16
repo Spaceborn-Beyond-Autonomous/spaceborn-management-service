@@ -15,13 +15,13 @@ if TYPE_CHECKING:
 
 
 class Project(Base):
-    __tablename__ = "project" # type: ignore[assignment]
+    __tablename__ = "projects" # type: ignore[assignment]
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    team_id: Mapped[int] = mapped_column(ForeignKey("team.id", ondelete="SET NULL"), nullable=True)
-    owner_id: Mapped[int | None] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
+    owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)

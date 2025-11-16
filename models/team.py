@@ -13,18 +13,18 @@ if TYPE_CHECKING:
 team_members = Table(
     "team_members",
     Base.metadata,
-    Column("team_id", ForeignKey("team.id", ondelete="CASCADE"), primary_key=True),
-    Column("user_id", ForeignKey("user.id", ondelete="CASCADE"), primary_key=True),
+    Column("team_id", ForeignKey("teams.id", ondelete="CASCADE"), primary_key=True),
+    Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
 )
 
 class Team(Base):
-    __tablename__ = "team" # type: ignore[assignment]
+    __tablename__ = "teams" # type: ignore[assignment]
     __allow_unmapped__ = True  # Add this line
 
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    lead_id: Mapped[int | None] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"))
+    lead_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 
     # Relationships
     lead: Mapped["User"] = relationship("User", back_populates="team_lead", foreign_keys=[lead_id])

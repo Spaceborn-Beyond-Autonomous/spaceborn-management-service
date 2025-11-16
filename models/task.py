@@ -18,15 +18,15 @@ class TaskStatus(str, enum.Enum):
     done = "done"
 
 class Task(Base):
-    __tablename__ = "task" # type: ignore[assignment]
+    __tablename__ = "tasks" # type: ignore[assignment]
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus, name="task_status_enum"), default=TaskStatus.todo, nullable=False)
 
-    project_id: Mapped[int] = mapped_column(ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
-    assignee_id: Mapped[int | None] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    assignee_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
