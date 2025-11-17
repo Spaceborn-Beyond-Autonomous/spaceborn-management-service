@@ -16,7 +16,7 @@ async def register_user(payload: UserCreate, session: AsyncSession = Depends(get
         raise HTTPException(status_code=409, detail="Email already registered")
     user = User(
         email=payload.email,
-        name=payload.name,
+        username=payload.username,
         hashed_password=hash_password(payload.password),
         role=payload.role
     )
@@ -61,8 +61,8 @@ async def update_user(user_id: int, payload: UserUpdate, session: AsyncSession =
         raise HTTPException(status_code=404, detail="User not found")
     if payload.password:
         user.hashed_password = hash_password(payload.password)
-    if payload.name is not None:
-        user.email = payload.name
+    if payload.username is not None:
+        user.username = payload.username
     if payload.role is not None:
         user.role = payload.role
     if payload.is_active is not None:
