@@ -20,6 +20,7 @@ from models.project import Project  # noqa: F401
 from models.task import Task  # noqa: F401
 from models.revenue import Revenue  # noqa: F401
 from models.meeting import Meeting  # noqa: F401
+from models.meeting_attendance import MeetingAttendance  # noqa: F401
 
 from core.config import get_settings
 

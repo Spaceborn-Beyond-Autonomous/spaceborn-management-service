@@ -3,7 +3,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from db.base import Base
 from typing import TYPE_CHECKING
-from sqlalchemy.orm import DeclarativeBase
 
 if TYPE_CHECKING:
     from models.project import Project
