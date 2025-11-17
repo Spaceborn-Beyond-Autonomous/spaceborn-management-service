@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update
-from app.deps import get_session_dep, AdminOnly, get_current_user
+from app.deps import CoreOrAdmin, get_session_dep, AdminOnly, get_current_user
 from schemas.user import LoginRequest, UserRead, UserCreate, UserUpdate, Token
 from core.security import hash_password, verify_password, create_access_token
 from models.user import User, RoleEnum
@@ -38,7 +38,7 @@ async def login(
     token = create_access_token(subject=user.id)
     return {"access_token": token, "token_type": "bearer"}
 
-@router.get("/", response_model=list[UserRead], dependencies=[Depends(AdminOnly)])
+@router.get("/", response_model=list[UserRead], dependencies=[Depends(CoreOrAdmin)])
 async def list_users(
     session: AsyncSession = Depends(get_session_dep),
     include_inactive: bool = False  # Query parameter
