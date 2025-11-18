@@ -4,7 +4,6 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from typing import Optional
 
-
 # Get project root directory (parent of core/)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,7 +38,7 @@ class Settings(BaseSettings):
             # Remove sslmode and channel_binding (not supported by asyncpg)
             if 'sslmode' in params:
                 params.pop('sslmode')
-                params['ssl'] = ['require']  # asyncpg uses ssl=true
+                params['ssl'] = ['require']
             if 'channel_binding' in params:
                 params.pop('channel_binding')
             
@@ -62,11 +61,27 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # Redis Configuration 
+    # For production: Only set REDIS_URL
+    # For local: Set REDIS_HOST, REDIS_PORT, etc. (REDIS_URL is None)
+    REDIS_URL: Optional[str] = None  # Takes priority if set (Render/production)
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
     REDIS_PASSWORD: Optional[str] = None
-    REDIS_URL: Optional[str] = None
+    
+    @property
+    def redis_connection_url(self) -> str:
+        """
+        Get Redis connection URL
+        Priority: REDIS_URL > constructed from REDIS_HOST/PORT/etc.
+        """
+        if self.REDIS_URL:
+            # Production: Use REDIS_URL from Render Key Value
+            return self.REDIS_URL
+        else:
+            # Local: Construct from individual settings
+            auth = f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else ""
+            return f"redis://{auth}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
     
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
