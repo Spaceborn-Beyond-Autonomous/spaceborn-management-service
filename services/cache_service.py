@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 from core.redis_client import RedisCache
 from models.user import User
 
@@ -101,11 +101,11 @@ class TeamCacheService:
         await RedisCache.clear_pattern("team:*")  # Add await
 
 
-# Usage example for projects
 class ProjectCacheService:
     """Service for caching project data"""
     
     PROJECT_CACHE_TTL = 300  # 5 minutes
+    PROJECT_LIST_TTL = 180   # 3 minutes
     
     @staticmethod
     async def get_project(project_id: int) -> Optional[dict]:
@@ -124,9 +124,25 @@ class ProjectCacheService:
     
     @staticmethod
     async def invalidate_all_projects():
-        """Invalidate all project caches"""
+        """Invalidate all project caches including lists"""
         await RedisCache.clear_pattern("project:*")
-
+    
+    # List caching - Fix return type to Any
+    @staticmethod
+    async def get_project_list(cache_key: str) -> Optional[Any]:  # Changed from list to Any
+        """Get project list or dict from cache"""
+        cached = await RedisCache.get(cache_key)
+        return cached if cached else None
+    
+    @staticmethod
+    async def set_project_list(cache_key: str, data: Any, ttl: int = PROJECT_LIST_TTL):  # Changed projects to data
+        """Cache project list or dict"""
+        await RedisCache.set(cache_key, data, ttl)  # Changed projects to data
+    
+    @staticmethod
+    async def invalidate_project_lists():
+        """Invalidate all project list caches"""
+        await RedisCache.clear_pattern("project:list:*")
 
 # Usage example for tasks
 class TaskCacheService:
