@@ -26,7 +26,7 @@ class ProjectBase(BaseModel):
     # Status & Progress
     status: ProjectStatus = Field(default=ProjectStatus.PLANNING)
     priority: ProjectPriority = Field(default=ProjectPriority.MEDIUM)
-    progress: int = Field(default=0, ge=0, le=100)  # 0-100%
+    progress: int = Field(default=0, ge=0, le=100)
     
     # Timeline
     start_date: Optional[datetime] = None
@@ -35,19 +35,27 @@ class ProjectBase(BaseModel):
     
     # Financial
     budget: Optional[float] = Field(None, ge=0)
-    spent: Optional[float] = Field(default=0, ge=0)
+    spent: float = Field(default=0.0, ge=0)
     
     # Organization
     team_id: Optional[int] = None
-    owner_id: Optional[int] = None
     
     # Metadata
     is_archived: bool = Field(default=False)
     tags: Optional[list[str]] = Field(default_factory=list)
 
 
-class ProjectCreate(ProjectBase):
-    pass
+class ProjectCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = Field(None, max_length=2000)
+    status: Optional[ProjectStatus] = ProjectStatus.PLANNING
+    priority: Optional[ProjectPriority] = ProjectPriority.MEDIUM
+    progress: Optional[int] = Field(default=0, ge=0, le=100)
+    start_date: Optional[datetime] = None
+    due_date: Optional[datetime] = None
+    budget: Optional[float] = Field(None, ge=0)
+    team_id: Optional[int] = None
+    tags: Optional[list[str]] = Field(default_factory=list)
 
 
 class ProjectUpdate(BaseModel):
@@ -62,7 +70,6 @@ class ProjectUpdate(BaseModel):
     budget: Optional[float] = Field(None, ge=0)
     spent: Optional[float] = Field(None, ge=0)
     team_id: Optional[int] = None
-    owner_id: Optional[int] = None
     is_archived: Optional[bool] = None
     tags: Optional[list[str]] = None
 

@@ -31,7 +31,6 @@ def _serialize_project(project: Project) -> dict:
         "budget": project.budget,
         "spent": project.spent,
         "team_id": project.team_id,
-        "owner_id": project.owner_id,
         "is_archived": project.is_archived,
         "tags": project.tags or [],
         "created_at": project.created_at.isoformat(),
@@ -72,7 +71,6 @@ async def list_projects(
     priority: Optional[ProjectPriority] = None,
     include_archived: bool = False,
     team_id: Optional[int] = None,
-    owner_id: Optional[int] = None,
     overdue_only: bool = False,
 ):
     """List projects with filtering and caching"""
@@ -84,7 +82,6 @@ async def list_projects(
         f"priority:{priority.value if priority else 'all'}",
         f"archived:{include_archived}",
         f"team:{team_id or 'all'}",
-        f"owner:{owner_id or 'all'}",
         f"overdue:{overdue_only}"
     ]
     cache_key = ":".join(cache_key_parts)
@@ -100,7 +97,6 @@ async def list_projects(
     # Build query with eager loading
     query = select(Project).options(
         selectinload(Project.team),
-        selectinload(Project.owner),
     )
     
     # Base permission filters
@@ -109,13 +105,11 @@ async def list_projects(
         if team_ids:
             query = query.where(
                 or_(
-                    Project.owner_id == user.id,
                     Project.team_id.in_(team_ids)
                 )
             )
         else:
-            query = query.where(Project.owner_id == user.id)
-    
+            pass    
     # Additional filters
     filters = []
     
@@ -130,9 +124,6 @@ async def list_projects(
     
     if team_id:
         filters.append(Project.team_id == team_id)
-    
-    if owner_id:
-        filters.append(Project.owner_id == owner_id)
     
     if overdue_only:
         filters.append(
@@ -189,13 +180,12 @@ async def get_project_stats(
         if team_ids:
             query = base_query.where(
                 or_(
-                    Project.owner_id == user.id,
                     Project.team_id.in_(team_ids)
                 )
             )
         else:
-            query = base_query.where(Project.owner_id == user.id)
-    
+            pass
+
     # Total projects
     total = await session.scalar(select(func.count()).select_from(base_query.subquery()))
     
@@ -277,7 +267,7 @@ async def get_project(
         # Still check permissions for cached data
         if user.role == RoleEnum.EMPLOYEE:
             team_ids = [t.id for t in user.teams]
-            if not (cached_project["owner_id"] == user.id or cached_project["team_id"] in team_ids):
+            if not (cached_project["team_id"] in team_ids):
                 raise HTTPException(status_code=403, detail="Insufficient permissions")
         
         return cached_project
@@ -287,7 +277,7 @@ async def get_project(
     # Query with eager loading
     result = await session.execute(
         select(Project)
-        .options(selectinload(Project.team), selectinload(Project.owner))
+        .options(selectinload(Project.team))
         .where(Project.id == pid)
     )
     project = result.scalar_one_or_none()
@@ -298,7 +288,7 @@ async def get_project(
     # Check permissions
     if user.role == RoleEnum.EMPLOYEE:
         team_ids = [t.id for t in user.teams]
-        if not (project.owner_id == user.id or (project.team_id and project.team_id in team_ids)):
+        if not (project.team_id and project.team_id in team_ids):
             raise HTTPException(status_code=403, detail="Insufficient permissions")
     
     # Serialize and cache

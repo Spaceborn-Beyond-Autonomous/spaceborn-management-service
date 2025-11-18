@@ -32,7 +32,7 @@ async def get_core_data(session: AsyncSession):
 async def get_employee_data(session: AsyncSession, user: User):
     my_tasks = (await session.execute(select(Task).where(Task.assignee_id == user.id))).scalars().all()
     my_projects = (await session.execute(select(Project).where(
-        (Project.owner_id == user.id) | (Project.team_id.in_([t.id for t in user.teams] or [-1]))
+        (Project.team_id.in_([t.id for t in user.teams] or [-1]))
     ))).scalars().all()
     return {"my_task_ids": [t.id for t in my_tasks], "my_project_ids": [p.id for p in my_projects]}
 

@@ -1,15 +1,13 @@
 # models/project.py
 from sqlalchemy import String, ForeignKey, DateTime, Text, Enum, Integer, Float, Boolean, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
-from datetime import datetime
+from datetime import datetime, timezone
 from db.base import Base
 from typing import TYPE_CHECKING
 import enum
 
 if TYPE_CHECKING:
     from models.team import Team
-    from models.user import User
     from models.task import Task
     from models.revenue import Revenue
     from models.meeting import Meeting
@@ -31,7 +29,7 @@ class ProjectPriority(str, enum.Enum):
 
 
 class Project(Base):
-    __tablename__ = "projects" # type: ignore[assignment]
+    __tablename__ = "projects"  # type: ignore[assignment]
 
     # Core Fields
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -51,7 +49,7 @@ class Project(Base):
         nullable=False,
         index=True
     )
-    progress: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # 0-100
+    progress: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     
     # Timeline
     start_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -68,11 +66,6 @@ class Project(Base):
         nullable=True,
         index=True
     )
-    owner_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"), 
-        nullable=True,
-        index=True
-    )
     
     # Metadata
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
@@ -80,20 +73,19 @@ class Project(Base):
     
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
     )
 
     # Relationships
     team: Mapped["Team"] = relationship("Team", back_populates="projects")
-    owner: Mapped["User"] = relationship("User", back_populates="owned_projects", foreign_keys=[owner_id])
     tasks: Mapped[list["Task"]] = relationship("Task", back_populates="project", cascade="all, delete-orphan")
     revenues: Mapped[list["Revenue"]] = relationship("Revenue", back_populates="project", cascade="all, delete-orphan")
     meetings: Mapped[list["Meeting"]] = relationship("Meeting", back_populates="project", cascade="all, delete-orphan")
@@ -110,7 +102,7 @@ class Project(Base):
         """Calculate days until due date"""
         if self.due_date is None:
             return None
-        delta = self.due_date - datetime.now(self.due_date.tzinfo)
+        delta = self.due_date - datetime.now(timezone.utc)
         return delta.days
 
     @property
@@ -118,7 +110,7 @@ class Project(Base):
         """Check if project is overdue"""
         if self.due_date is None or self.status == ProjectStatus.COMPLETED:
             return False
-        return datetime.now(self.due_date.tzinfo) > self.due_date
+        return datetime.now(timezone.utc) > self.due_date
 
     @property
     def completion_percentage(self) -> int:
