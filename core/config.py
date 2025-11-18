@@ -2,6 +2,8 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from typing import Optional
+
 
 # Get project root directory (parent of core/)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,6 +60,12 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # Redis Configuration 
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: Optional[str] = None
     
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
