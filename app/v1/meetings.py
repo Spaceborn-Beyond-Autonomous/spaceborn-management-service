@@ -8,6 +8,7 @@ from models.user import User, RoleEnum
 from models.project import Project
 from models.meeting_attendance import MeetingAttendance
 from sqlalchemy import func
+from app.celery_app.tasks import meeting_reminder
 
 router = APIRouter(prefix="/meetings", tags=["meetings"])
 
@@ -18,6 +19,7 @@ async def create_meeting(payload: MeetingCreate, session: AsyncSession = Depends
         raise HTTPException(status_code=404, detail="Project not found")
     m = Meeting(**payload.model_dump())
     session.add(m)
+    meeting_reminder.delay(m.id)
     await session.commit()
     await session.refresh(m)
     return m
@@ -38,7 +40,9 @@ async def update_meeting(mid: int, payload: MeetingUpdate, session: AsyncSession
         raise HTTPException(status_code=404, detail="Meeting not found")
     for k, v in payload.model_dump(exclude_unset=True).items():
         setattr(m, k, v)
+        
     await session.commit()
+    meeting_reminder.delay(m.id)
     await session.refresh(m)
     return m
 
