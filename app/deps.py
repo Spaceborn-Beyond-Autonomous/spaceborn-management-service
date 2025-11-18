@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Annotated, Optional
+from typing import AsyncGenerator, Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +9,9 @@ from schemas.user import TokenPayload
 from models.user import User, RoleEnum
 from services.cache_service import UserCacheService
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
+
 
 async def get_session_dep() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
@@ -33,18 +35,23 @@ async def get_current_user(
     data = TokenPayload(**payload)
     user_id = int(data.sub)
     
-    # Try to get from cache first - ADD AWAIT HERE
-    cached_user = await UserCacheService.get_user(user_id)  # <-- Add await
+    # Try to get from cache first
+    cached_user = await UserCacheService.get_user(user_id)
     if cached_user:
         print(f"✓ Cache HIT for user {user_id}")
         # Convert cached dict back to User model
+        # Convert role string back to RoleEnum
+        role = cached_user["role"]
+        if isinstance(role, str):
+            role = RoleEnum(role)  # Convert string to enum
+        
         user = User(
             id=cached_user["id"],
             email=cached_user["email"],
             username=cached_user["username"],
-            role=cached_user["role"],
+            role=role,  # Use the converted enum
             is_active=cached_user["is_active"],
-            hashed_password=""  # Don't include password in cache
+            hashed_password=""
         )
         return user
     
@@ -62,17 +69,19 @@ async def get_current_user(
             detail="User inactive or not found"
         )
     
-    # Cache the user for next requests - ADD AWAIT HERE
-    await UserCacheService.set_user(user)  # <-- Add await
+    # Cache the user for next requests
+    await UserCacheService.set_user(user)
     
     return user
-
 
 
 def require_roles(*roles: RoleEnum):
     async def dep(user: Annotated[User, Depends(get_current_user)]) -> User:
         if user.role not in roles:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
         return user
     return dep
 
