@@ -174,3 +174,58 @@ class TaskCacheService:
     async def invalidate_project_tasks(project_id: int):
         """Invalidate all tasks for a specific project"""
         await RedisCache.clear_pattern(f"task:project:{project_id}:*")
+        
+
+class DashboardCacheService:
+    """Caching dashboard data per role/user"""
+
+    ADMIN_KEY = "dashboard:admin"
+    CORE_KEY = "dashboard:core"
+    EMPLOYEE_KEY = lambda user_id: f"dashboard:employee:{user_id}"
+
+    DASHBOARD_TTL = 60  # 1 minute
+
+    # ---------- ADMIN ----------
+    @staticmethod
+    async def get_admin():
+        return await RedisCache.get(DashboardCacheService.ADMIN_KEY)
+
+    @staticmethod
+    async def set_admin(data: dict, ttl: int = DASHBOARD_TTL):
+        await RedisCache.set(DashboardCacheService.ADMIN_KEY, data, ttl)
+
+    # ---------- CORE ----------
+    @staticmethod
+    async def get_core():
+        return await RedisCache.get(DashboardCacheService.CORE_KEY)
+
+    @staticmethod
+    async def set_core(data: dict, ttl: int = DASHBOARD_TTL):
+        await RedisCache.set(DashboardCacheService.CORE_KEY, data, ttl)
+
+    # ---------- EMPLOYEE ----------
+    @staticmethod
+    async def get_employee(user_id: int):
+        key = DashboardCacheService.EMPLOYEE_KEY(user_id)
+        return await RedisCache.get(key)
+
+    @staticmethod
+    async def set_employee(user_id: int, data: dict, ttl: int = DASHBOARD_TTL):
+        key = DashboardCacheService.EMPLOYEE_KEY(user_id)
+        await RedisCache.set(key, data, ttl)
+
+    @staticmethod
+    async def invalidate_employee(user_id: int):
+        key = DashboardCacheService.EMPLOYEE_KEY(user_id)
+        await RedisCache.delete(key)
+
+    # ---------- INVALIDATION HELPERS ----------
+    @staticmethod
+    async def invalidate_all():
+        """Clear admin/core/employee dashboards"""
+        await RedisCache.clear_pattern("dashboard:*")
+
+    @staticmethod
+    async def invalidate_employees():
+        """Clear only employee dashboards"""
+        await RedisCache.clear_pattern("dashboard:employee:*")
