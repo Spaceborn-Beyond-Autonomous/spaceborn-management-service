@@ -18,7 +18,7 @@ team_members = Table(
 class Team(Base):
     __tablename__ = "teams"  # type: ignore[assignment]
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True,index=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     lead_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 
@@ -32,8 +32,6 @@ class Team(Base):
         "User",
         secondary=team_members,
         back_populates="teams",
+        lazy="selectin"
     )
     projects: Mapped[list["Project"]] = relationship("Project", back_populates="team")
-
-    # Runtime-only attribute for response use
-    member_ids: ClassVar[list[int] | None] = None  # Use ClassVar
