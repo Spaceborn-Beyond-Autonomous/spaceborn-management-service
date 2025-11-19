@@ -25,7 +25,7 @@ async def create_team(payload: TeamCreate, session: AsyncSession = Depends(get_s
     - **name**: Team name (unique)
     - **member_ids**: List of user IDs to add as members
     """
-    team = Team(name=payload.name)
+    team = Team(name=payload.name, lead_id=payload.lead_id)
     session.add(team)
     await session.flush()
 
@@ -88,6 +88,9 @@ async def update_team(
 
     if payload.name is not None:
         team.name = payload.name
+
+    if payload.lead_id is not None:
+        team.lead_id = payload.lead_id
 
     if payload.member_ids is not None:
         # Validate member IDs
