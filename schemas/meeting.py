@@ -3,28 +3,48 @@ from typing import Optional
 from datetime import datetime
 from typing import List
 
+from schemas.user import UserRead
+
 class MeetingBase(BaseModel):
-    project_id: int
-    topic: str
+    title: str
     agenda: Optional[str] = None
     scheduled_at: datetime
+    meeting_link: Optional[str] = None
+    organizer: Optional[str] = None
+    reminder_interval: int = 15
+    notes: Optional[str] = None
 
 class MeetingCreate(MeetingBase):
-    pass
+    attendees: Optional[List[int]] = None 
 
 class MeetingUpdate(BaseModel):
-    topic: Optional[str] = None
+    title: Optional[str] = None
     agenda: Optional[str] = None
     scheduled_at: Optional[datetime] = None
+    meeting_link: Optional[str] = None
+    organizer: Optional[str] = None
+    reminder_interval: Optional[int] = None
+    notes: Optional[str] = None
+    attendees: Optional[List[int]] = None
+
+class MeetingAttendanceWithUser(BaseModel):
+    id: int
+    attended: bool
+    joined_at: Optional[datetime] = None
+    user: UserRead
+    
+    class Config:
+        from_attributes = True
 
 class MeetingRead(MeetingBase):
     id: int
     created_at: datetime
+    attendances: List[MeetingAttendanceWithUser] = []
     class Config:
         from_attributes = True
 
 class MeetingAttendanceCreate(BaseModel):
-    user_ids: List[int]
+    attendees: Optional[List[int]] = None
 
 class MeetingAttendanceRead(BaseModel):
     id: int
