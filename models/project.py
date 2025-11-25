@@ -88,7 +88,6 @@ class Project(Base):
     team: Mapped["Team"] = relationship("Team", back_populates="projects")
     tasks: Mapped[list["Task"]] = relationship("Task", back_populates="project", cascade="all, delete-orphan")
     revenues: Mapped[list["Revenue"]] = relationship("Revenue", back_populates="project", cascade="all, delete-orphan")
-    meetings: Mapped[list["Meeting"]] = relationship("Meeting", back_populates="project", cascade="all, delete-orphan")
 
     @property
     def budget_remaining(self) -> float | None:

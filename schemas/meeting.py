@@ -15,7 +15,7 @@ class MeetingBase(BaseModel):
     notes: Optional[str] = None
 
 class MeetingCreate(MeetingBase):
-    user_ids: List[int]  # for attendees
+    attendees: Optional[List[int]] = None 
 
 class MeetingUpdate(BaseModel):
     title: Optional[str] = None
@@ -25,17 +25,26 @@ class MeetingUpdate(BaseModel):
     organizer: Optional[str] = None
     reminder_interval: Optional[int] = None
     notes: Optional[str] = None
-    user_ids: Optional[List[int]] = None
+    attendees: Optional[List[int]] = None
+
+class MeetingAttendanceWithUser(BaseModel):
+    id: int
+    attended: bool
+    joined_at: Optional[datetime] = None
+    user: UserRead
+    
+    class Config:
+        from_attributes = True
 
 class MeetingRead(MeetingBase):
     id: int
     created_at: datetime
-    attendances: List[UserRead] = []
+    attendances: List[MeetingAttendanceWithUser] = []
     class Config:
         from_attributes = True
 
 class MeetingAttendanceCreate(BaseModel):
-    user_ids: List[int]
+    attendees: Optional[List[int]] = None
 
 class MeetingAttendanceRead(BaseModel):
     id: int

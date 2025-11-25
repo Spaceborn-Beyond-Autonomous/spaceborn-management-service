@@ -13,10 +13,6 @@ class Meeting(Base):
     __tablename__ = "meetings" # type: ignore[assignment]
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    project_id: Mapped[int] = mapped_column(
-        ForeignKey("projects.id", ondelete="CASCADE"),
-        nullable=False
-    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     agenda: Mapped[str | None] = mapped_column(Text, nullable=True)
     scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -35,8 +31,6 @@ class Meeting(Base):
         onupdate=func.now(),
         nullable=False
     )
-
-    project: Mapped["Project"] = relationship("Project", back_populates="meetings")
     
     # Relationship to MeetingAttendance association
     attendances: Mapped[List["MeetingAttendance"]] = relationship(
