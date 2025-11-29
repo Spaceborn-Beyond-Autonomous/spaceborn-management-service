@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.deps import AnyAuthenticated, get_session_dep
 from models.user import User, RoleEnum
+from models.team import team_members 
 from models.project import Project
 from models.task import Task, TaskStatus
 from models.revenue import Revenue
@@ -10,32 +11,31 @@ from services.cache_service import DashboardCacheService
 
 router = APIRouter(prefix="/dashboard", tags=["dashboards"])
 
-
 # --------------------------
 #   ADMIN DASHBOARD DATA
 # --------------------------
 async def get_admin_data(session: AsyncSession):
-    total_users = (await session.execute(
-        select(func.count()).select_from(User)
-    )).scalar_one()
+    # 1. Users
+    q_users = select(func.count()).select_from(User)
+    total_users = (await session.execute(q_users)).scalar_one()
 
-    total_projects = (await session.execute(
-        select(func.count()).select_from(Project)
-    )).scalar_one()
+    # 2. Projects
+    q_projects = select(func.count()).select_from(Project)
+    total_projects = (await session.execute(q_projects)).scalar_one()
 
-    total_revenue = (await session.execute(
-        select(func.coalesce(func.sum(Revenue.amount), 0))
-    )).scalar_one()
+    # 3. Revenue
+    q_revenue = select(func.coalesce(func.sum(Revenue.amount), 0))
+    total_revenue = (await session.execute(q_revenue)).scalar_one()
 
-    tasks_by_status = (await session.execute(
-        select(Task.status, func.count()).group_by(Task.status)
-    )).all()
+    # 4. Task Status
+    q_tasks = select(Task.status, func.count()).group_by(Task.status)
+    tasks_status_result = (await session.execute(q_tasks)).all()
 
     return {
         "total_users": total_users,
         "total_projects": total_projects,
         "total_revenue": float(total_revenue),
-        "tasks_by_status": {status.value: count for status, count in tasks_by_status},
+        "tasks_by_status": {status.value: count for status, count in tasks_status_result},
     }
 
 
@@ -43,46 +43,50 @@ async def get_admin_data(session: AsyncSession):
 #   CORE DASHBOARD DATA
 # --------------------------
 async def get_core_data(session: AsyncSession):
-    projects = (await session.execute(select(Project))).scalars().all()
-    open_tasks = (await session.execute(
-        select(Task).where(Task.status != TaskStatus.done)
-    )).scalars().all()
+    # 1. Projects
+    q_projects = select(Project.id, Project.name)
+    projects_res = (await session.execute(q_projects)).all()
+
+    # 2. Open Tasks
+    q_tasks = select(Task.id, Task.title).where(Task.status != TaskStatus.done)
+    tasks_res = (await session.execute(q_tasks)).all()
 
     return {
-        "projects": [p.id for p in projects],
-        "open_tasks": [t.id for t in open_tasks]
+        "projects": [{"id": r.id, "name": r.name} for r in projects_res],
+        "open_tasks": [{"id": r.id, "title": r.title} for r in tasks_res]
     }
 
 
 # --------------------------
 #   EMPLOYEE DASHBOARD DATA
 # --------------------------
-async def get_employee_data(session: AsyncSession, user: User):
-    my_tasks = (await session.execute(
-        select(Task).where(Task.assignee_id == user.id)
-    )).scalars().all()
+async def get_employee_data(session: AsyncSession, user_id: int):
+    # 1. My Tasks
+    q_tasks = select(Task.id, Task.title, Task.status).where(Task.assignee_id == user_id)
+    tasks_res = (await session.execute(q_tasks)).all()
 
-    my_projects = (await session.execute(
-        select(Project).where(
-            Project.team_id.in_([t.id for t in user.teams] or [-1])
-        )
-    )).scalars().all()
+    # 2. My Projects (via Team Members association)
+    q_projects = (
+        select(Project.id, Project.name)
+        .join(team_members, team_members.c.team_id == Project.team_id)
+        .where(team_members.c.user_id == user_id)
+    )
+    projects_res = (await session.execute(q_projects)).all()
 
     return {
-        "my_task_ids": [t.id for t in my_tasks],
-        "my_project_ids": [p.id for p in my_projects]
+        "my_tasks": [{"id": r.id, "title": r.title, "status": r.status.value} for r in tasks_res],
+        "my_projects": [{"id": r.id, "name": r.name} for r in projects_res]
     }
 
 
 # --------------------------
-#   MAIN DASHBOARD ROUTE
+#   MAIN ROUTE
 # --------------------------
 @router.get("/", dependencies=[Depends(AnyAuthenticated)])
 async def common_dashboard(
     session: AsyncSession = Depends(get_session_dep),
     user: User = Depends(AnyAuthenticated)
 ):
-    # User profile summary
     user_data = {
         "id": user.id,
         "email": user.email,
@@ -90,38 +94,34 @@ async def common_dashboard(
         "role": user.role.value,
     }
 
-    # ------------------- ADMIN -------------------
+    async def fetch_and_cache(role_key: str, fetch_func, *args):
+        # 1. Check Cache
+        if role_key == "admin":
+            cached = await DashboardCacheService.get_admin()
+        elif role_key == "core":
+            cached = await DashboardCacheService.get_core()
+        else:
+            cached = await DashboardCacheService.get_employee(user.id)
+            
+        if cached:
+            return {"user": user_data, "dashboard": cached}
+        
+        # 2. Fetch Fresh Data
+        data = await fetch_func(*args)
+        
+        # 3. Set Cache
+        if role_key == "admin":
+            await DashboardCacheService.set_admin(data)
+        elif role_key == "core":
+            await DashboardCacheService.set_core(data)
+        else:
+            await DashboardCacheService.set_employee(user.id, data)
+            
+        return {"user": user_data, "dashboard": data}
+
     if user.role == RoleEnum.ADMIN:
-        cached = await DashboardCacheService.get_admin()
-        if cached:
-            print("✓ Admin dashboard fetched from Redis cache")
-            return {"user": user_data, "dashboard": cached}
-
-        dashboard_data = await get_admin_data(session)
-        await DashboardCacheService.set_admin(dashboard_data)
-        print("✓ Admin dashboard cached")
-        return {"user": user_data, "dashboard": dashboard_data}
-
-    # ------------------- CORE -------------------
+        return await fetch_and_cache("admin", get_admin_data, session)
     elif user.role == RoleEnum.CORE:
-        cached = await DashboardCacheService.get_core()
-        if cached:
-            print("✓ Core dashboard fetched from Redis cache")
-            return {"user": user_data, "dashboard": cached}
-
-        dashboard_data = await get_core_data(session)
-        await DashboardCacheService.set_core(dashboard_data)
-        print("✓ Core dashboard cached")
-        return {"user": user_data, "dashboard": dashboard_data}
-
-    # ------------------- EMPLOYEE -------------------
+        return await fetch_and_cache("core", get_core_data, session)
     else:
-        cached = await DashboardCacheService.get_employee(user.id)
-        if cached:
-            print(f"✓ Employee {user.id} dashboard fetched from Redis cache")
-            return {"user": user_data, "dashboard": cached}
-
-        dashboard_data = await get_employee_data(session, user)
-        await DashboardCacheService.set_employee(user.id, dashboard_data)
-        print(f"✓ Employee {user.id} dashboard cached")
-        return {"user": user_data, "dashboard": dashboard_data}
+        return await fetch_and_cache("employee", get_employee_data, session, user.id)
