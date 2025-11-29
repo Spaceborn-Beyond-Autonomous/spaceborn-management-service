@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from models.team import Team
     from models.meeting_attendance import MeetingAttendance
     from models.meeting import Meeting
+    from models.notification import Notification
 
 class RoleEnum(str, enum.Enum):
     ADMIN = "admin"
@@ -55,4 +56,11 @@ class User(Base):
         secondary="meeting_attendances",
         viewonly=True,
         back_populates="attendees"
+    )
+
+    notifications: Mapped[list["Notification"]] = relationship(
+        "Notification", 
+        back_populates="user", 
+        cascade="all, delete-orphan",
+        lazy="select"
     )
