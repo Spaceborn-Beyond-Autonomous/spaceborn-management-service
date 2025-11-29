@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from core.config import get_settings
 from core.redis_client import redis_client, test_redis_connection
-from app.v1 import users, teams, projects, tasks, revenues, meetings, dashboards, auth
+from app.v1 import users, teams, projects, tasks, revenues, meetings, dashboards, auth,notifications
 import logging
 
 # Configure logging
@@ -76,6 +76,7 @@ def get_app() -> FastAPI:
     app.include_router(meetings.router, prefix=settings.API_V1_STR)
     app.include_router(dashboards.router, prefix=settings.API_V1_STR)
     app.include_router(auth.router, prefix=settings.API_V1_STR)
+    app.include_router(notifications.router, prefix=settings.API_V1_STR)
     
     return app
 
