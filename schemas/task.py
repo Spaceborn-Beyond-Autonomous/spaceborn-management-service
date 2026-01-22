@@ -13,11 +13,18 @@ class TaskBase(BaseModel):
 class TaskCreate(TaskBase):
     pass
 
+# class TaskUpdate(BaseModel):
+#     title: Optional[str] = None
+#     description: Optional[str] = None
+#     status: Optional[TaskStatus] = None
+#     assignee_id: Optional[int] = None
+
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[TaskStatus] = None
     assignee_id: Optional[int] = None
+    project_id: Optional[int] = None
 
 class TaskRead(TaskBase):
     id: int
