@@ -8,6 +8,18 @@ from models.user import User, RoleEnum
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
+# Just for debugging
+from sqlalchemy import text
+# from sqlalchemy.ext.asyncio import AsyncSession
+# from fastapi import Depends
+from db.session import get_session as get_session_dep  # adjust import if path differs
+
+@router.get("/debug_enum")
+async def debug_enum(session: AsyncSession = Depends(get_session_dep)):
+    result = await session.execute(text("SELECT unnest(enum_range(NULL::task_status_enum));"))
+    return result.scalars().all()
+
+
 @router.post("/", response_model=TaskRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(CoreOrAdmin)])
 async def create_task(payload: TaskCreate, session: AsyncSession = Depends(get_session_dep)):
     t = Task(**payload.model_dump())
