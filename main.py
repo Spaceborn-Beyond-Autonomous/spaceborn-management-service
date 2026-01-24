@@ -61,7 +61,7 @@ def get_app() -> FastAPI:
     
     app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://spaceborn-dashboard.vercel.app/"],
+    allow_origins=["https://spaceborn-dashboard.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
