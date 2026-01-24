@@ -63,9 +63,8 @@ def get_app() -> FastAPI:
     CORSMiddleware,
     allow_origins=["https://space-born-dashboard.vercel.app"],
     allow_credentials=True,
-    allow_methods=["*"],   # Allows POST, GET, PUT, DELETE, OPTIONS
-    allow_headers=["*"],   # Allows all browser headers (important!)
-    expose_headers=["*"]
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
     )
     
     # Include routers
