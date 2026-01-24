@@ -59,21 +59,13 @@ def get_app() -> FastAPI:
         lifespan=lifespan  # Add lifespan handler
     )
     
-    # app.add_middleware(
-    #     CORSMiddleware,
-    #     allow_origins=settings.origins_list,
-    #     allow_credentials=True,
-    #     allow_methods=["*"],
-    #     allow_headers=["*"],
-    # )
-
     app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["https://space-born-dashboard.vercel.app"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["Authorization", "Content-Type"],
-        expose_headers=["*"]
+    CORSMiddleware,
+    allow_origins=["https://space-born-dashboard.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["*"],   # Allows POST, GET, PUT, DELETE, OPTIONS
+    allow_headers=["*"],   # Allows all browser headers (important!)
+    expose_headers=["*"]
     )
     
     # Include routers
